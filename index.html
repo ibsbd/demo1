@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Notepad — Professional</title>
+  <style>
+    /* ---------- Base / Theme ---------- */
+    :root{
+      --bg:#0f1724; /* dark navy */
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#2563eb;
+      --accent-2:#7c3aed;
+      --danger:#ef4444;
+      --glass: rgba(255,255,255,0.04);
+      --glass-2: rgba(255,255,255,0.02);
+      --success:#10b981;
+      --radius:12px;
+      --maxw:1100px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial;
+      background:
+        radial-gradient(800px 400px at 10% 10%, rgba(124,58,237,0.10), transparent 8%),
+        radial-gradient(600px 300px at 95% 80%, rgba(37,99,235,0.06), transparent 8%),
+        var(--bg);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:28px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+    .shell{width:100%;max-width:var(--maxw);display:grid;grid-template-columns:360px 1fr;gap:22px}
+    @media (max-width:980px){ .shell{grid-template-columns:1fr; padding-bottom:40px;} }
+
+    /* ---------- Left: Auth & Users ---------- */
+    .panel{
+      background:linear-gradient(180deg,var(--card), rgba(255,255,255,0.02));
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+    h2{margin:0 0 10px;font-size:18px}
+    .muted{color:var(--muted);font-size:13px;margin-bottom:12px}
+
+    .form-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+    input[type="text"], input[type="password"], .search{
+      background:var(--glass);
+      border: 1px solid rgba(255,255,255,0.04);
+      color: #e6eef8;
+      padding:10px 12px;border-radius:10px;
+      font-size:14px;
+    }
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border:none;color:white;padding:10px 14px;border-radius:10px;cursor:pointer;
+      box-shadow: 0 6px 18px rgba(37,99,235,0.12);font-weight:600;
+    }
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:500}
+    .small{font-size:13px;color:var(--muted)}
+
+    .space{height:12px}
+
+    /* users list compact */
+    .users-wrap{margin-top:12px}
+    .user-row{
+      display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.02);margin-bottom:10px;
+    }
+    .user-row strong{font-size:14px}
+    .user-actions{display:flex;gap:8px}
+
+    .btn.copy{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--accent);padding:8px;border-radius:8px}
+    .btn.view{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:8px;border-radius:8px}
+    .btn.remove{background:var(--danger);border:none;padding:8px;border-radius:8px;color:white}
+
+    /* ---------- Right: Workspace ---------- */
+    .workspace{display:flex;flex-direction:column;gap:16px}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.02);
+    }
+    .top-left{display:flex;flex-direction:column}
+    .role-badge{font-size:13px;color:var(--muted)}
+    .control-row{display:flex;gap:10px;align-items:center}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.02)
+    }
+
+    /* notepad */
+    #noteTitle{font-weight:700;margin-bottom:6px}
+    #savedAt{font-size:13px;color:var(--muted)}
+    #editor{
+      width:100%;min-height:420px;border-radius:12px;padding:14px;background:transparent;border:1px dashed rgba(255,255,255,0.03);resize:vertical;color:#e6eef8;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+      font-size:14px;line-height:1.5;
+    }
+
+    .toolbar{display:flex;gap:8px;align-items:center}
+
+    /* admin table */
+    .admin-table{width:100%;border-collapse:collapse;margin-top:8px}
+    .admin-table thead th{text-align:left;padding:10px;color:var(--muted);font-size:13px;border-bottom:1px solid rgba(255,255,255,0.03)}
+    .admin-table tbody td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.02)}
+    .tag{padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px;color:var(--muted)}
+
+    /* modal */
+    .modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:flex;align-items:center;justify-content:center;z-index:90;display:none}
+    .modal{background:linear-gradient(180deg,#071021, #071428);padding:18px;border-radius:12px;min-width:320px;border:1px solid rgba(255,255,255,0.03)}
+    .modal h3{margin:0 0 8px}
+    .modal .row{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+
+    /* subtle helpers */
+    .muted-2{color:#9fb2d6;font-size:13px}
+    .flex-row{display:flex;gap:8px;align-items:center}
+    .search{width:100%}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <!-- LEFT: Auth + Users -->
+    <div class="panel">
+      <h2>Notepad System</h2>
+      <div class="muted">Login / Register — ডিফল্ট অ্যাডমিন: <strong>admin0</strong> / <strong>admin0</strong></div>
+
+      <!-- login form -->
+      <div id="authSection">
+        <div class="form-row">
+          <label class="small">Username</label>
+          <input id="loginUser" type="text" placeholder="Username">
+        </div>
+        <div class="form-row">
+          <label class="small">Password</label>
+          <input id="loginPass" type="password" placeholder="Password">
+        </div>
+        <div class="flex-row">
+          <button class="btn" id="btnLogin">Login</button>
+          <button class="btn ghost" id="btnShowReg">Register</button>
+        </div>
+      </div>
+
+      <!-- register form -->
+      <div id="regSection" style="display:none;margin-top:12px">
+        <div class="form-row">
+          <label class="small">নতুন ইউজারনেম</label>
+          <input id="regUser" type="text" placeholder="new username">
+        </div>
+        <div class="form-row">
+          <label class="small">নতুন পাসওয়ার্ড</label>
+          <input id="regPass" type="password" placeholder="new password">
+        </div>
+        <div class="flex-row">
+          <button class="btn" id="btnRegister">Create</button>
+          <button class="btn ghost" id="btnCancelReg">Cancel</button>
+        </div>
+      </div>
+
+      <div class="space"></div>
+
+      <!-- search + quick info -->
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+        <input id="searchUser" class="search" placeholder="Search users..." />
+        <button class="btn ghost" id="btnRefresh">Refresh</button>
+      </div>
+      <div class="small muted">অ্যাডমিন প্যানেলে আপনি সব ইউজার দেখবেন এবং ম্যানেজ করতে পারবেন।</div>
+
+      <div class="users-wrap" id="usersWrap" style="margin-top:12px">
+        <!-- dynamic user rows -->
+      </div>
+    </div>
+
+    <!-- RIGHT: Workspace -->
+    <div class="workspace">
+      <div class="topbar card">
+        <div class="top-left">
+          <div id="who" style="font-weight:700">Not logged in</div>
+          <div class="role-badge" id="roleBadge">Guest</div>
+        </div>
+        <div class="control-row">
+          <div class="small muted-2" id="savedInfo">—</div>
+          <button class="btn ghost" id="btnLogout" style="display:none">Logout</button>
+        </div>
+      </div>
+
+      <!-- Editor Card -->
+      <div class="card" id="editorCard">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div id="noteTitle">Your Notepad</div>
+            <div id="savedAt" class="small muted">Not saved</div>
+          </div>
+          <div class="toolbar">
+            <button class="btn" id="saveBtn">Save</button>
+            <button class="btn ghost" id="clearBtn">Clear</button>
+            <button class="btn ghost" id="changePassBtn">Change Password</button>
+          </div>
+        </div>
+
+        <textarea id="editor" placeholder="Type your notes here..." spellcheck="false"></textarea>
+      </div>
+
+      <!-- Admin Panel -->
+      <div class="card" id="adminCard" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <h3 style="margin:0">Admin Panel</h3>
+          <div class="small muted">Manage users & notes</div>
+        </div>
+
+        <table class="admin-table" id="adminTable">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Preview</th>
+              <th style="width:220px;text-align:right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminTbody">
+            <!-- rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-back" id="modalBack">
+    <div class="modal" id="modal">
+      <h3 id="modalTitle">Confirm</h3>
+      <div id="modalBody" class="muted-2">Are you sure?</div>
+      <div class="row">
+        <button class="btn ghost" id="modalCancel">Cancel</button>
+        <button class="btn" id="modalConfirm">Yes, delete</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ---------- Data layer ---------- */
+const LS_KEY = 'notepad_users_pro_v1';
+function loadDB(){
+  const raw = localStorage.getItem(LS_KEY);
+  if(!raw){
+    const seed = {'admin0': {password: 'admin0', notes: ''}};
+    localStorage.setItem(LS_KEY, JSON.stringify(seed));
+    return seed;
+  }
+  try { 
+    const d = JSON.parse(raw);
+    if(!d['admin0']) { d['admin0'] = {password:'admin0', notes:''}; localStorage.setItem(LS_KEY, JSON.stringify(d)); }
+    return d;
+  } catch(e){ return {'admin0': {password: 'admin0', notes: ''}}; }
+}
+function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
+
+let db = loadDB();
+let currentUser = null;
+
+/* ---------- Elements ---------- */
+const loginUser = document.getElementById('loginUser');
+const loginPass = document.getElementById('loginPass');
+const btnLogin = document.getElementById('btnLogin');
+const btnShowReg = document.getElementById('btnShowReg');
+const regSection = document.getElementById('regSection');
+const authSection = document.getElementById('authSection');
+const btnRegister = document.getElementById('btnRegister');
+const btnCancelReg = document.getElementById('btnCancelReg');
+const regUser = document.getElementById('regUser');
+const regPass = document.getElementById('regPass');
+const usersWrap = document.getElementById('usersWrap');
+const searchUser = document.getElementById('searchUser');
+const btnRefresh = document.getElementById('btnRefresh');
+
+const who = document.getElementById('who');
+const roleBadge = document.getElementById('roleBadge');
+const btnLogout = document.getElementById('btnLogout');
+const editor = document.getElementById('editor');
+const saveBtn = document.getElementById('saveBtn');
+const clearBtn = document.getElementById('clearBtn');
+const changePassBtn = document.getElementById('changePassBtn');
+const savedAt = document.getElementById('savedAt');
+
+const adminCard = document.getElementById('adminCard');
+const adminTbody = document.getElementById('adminTbody');
+
+const modalBack = document.getElementById('modalBack');
+const modalTitle = document.getElementById('modalTitle');
+const modalBody = document.getElementById('modalBody');
+const modalCancel = document.getElementById('modalCancel');
+const modalConfirm = document.getElementById('modalConfirm');
+
+let modalResolve = null;
+
+/* ---------- Helpers ---------- */
+function fmtTime(){
+  const d = new Date();
+  return d.toLocaleString();
+}
+
+/* ---------- Auth / UI ---------- */
+function showRegisterForm(flag){
+  regSection.style.display = flag ? 'block' : 'none';
+  authSection.style.display = flag ? 'none' : 'block';
+}
+btnShowReg.addEventListener('click', ()=> showRegisterForm(true));
+btnCancelReg.addEventListener('click', ()=> showRegisterForm(false));
+
+btnRegister.addEventListener('click', ()=>{
+  const u = regUser.value.trim();
+  const p = regPass.value;
+  if(!u || !p){ alert('Username & password required'); return; }
+  db = loadDB();
+  if(db[u]){ alert('User already exists'); return; }
+  db[u] = {password: p, notes: ''};
+  saveDB(db);
+  regUser.value=''; regPass.value='';
+  alert('User created. Please login.');
+  showRegisterForm(false);
+  renderUsersList(); renderAdminTable();
+});
+
+btnLogin.addEventListener('click', ()=>{
+  const u = loginUser.value.trim();
+  const p = loginPass.value;
+  db = loadDB();
+  if(!u || !p){ alert('Provide credentials'); return; }
+  if(!db[u]){ alert('No such user'); return;}
+  if(db[u].password !== p){ alert('Wrong password'); return; }
+  currentUser = u;
+  loginUser.value=''; loginPass.value='';
+  applyLogin();
+});
+
+function applyLogin(){
+  who.textContent = currentUser;
+  roleBadge.textContent = (currentUser === 'admin0') ? 'Admin' : 'User';
+  btnLogout.style.display = 'inline-flex';
+  document.getElementById('authSection').style.display = 'none';
+  document.getElementById('regSection').style.display = 'none';
+  // show workspace
+  if(currentUser === 'admin0'){
+    adminCard.style.display = 'block';
+    editor.style.display = 'none';
+    saveBtn.style.display = 'none';
+    clearBtn.style.display = 'none';
+    changePassBtn.style.display = 'none';
+  } else {
+    adminCard.style.display = 'none';
+    editor.style.display = 'block';
+    saveBtn.style.display = 'inline-flex';
+    clearBtn.style.display = 'inline-flex';
+    changePassBtn.style.display = 'inline-flex';
+    editor.value = db[currentUser].notes || '';
+    savedAt.textContent = db[currentUser].notes ? `Saved at ${fmtTime()}` : 'Not saved';
+  }
+  renderUsersList(); renderAdminTable();
+}
+
+btnLogout.addEventListener('click', ()=>{
+  currentUser = null;
+  who.textContent = 'Not logged in';
+  roleBadge.textContent = 'Guest';
+  btnLogout.style.display = 'none';
+  adminCard.style.display = 'none';
+  editor.style.display = 'block';
+  saveBtn.style.display = 'none';
+  clearBtn.style.display = 'none';
+  changePassBtn.style.display = 'none';
+  document.getElementById('authSection').style.display = 'block';
+  editor.value = '';
+});
+
+/* ---------- Editor ---------- */
+saveBtn.addEventListener('click', ()=>{
+  if(!currentUser){ alert('Please login'); return; }
+  db = loadDB();
+  db[currentUser].notes = editor.value;
+  saveDB(db);
+  savedAt.textContent = `Saved at ${fmtTime()}`;
+  alert('Note saved');
+  renderUsersList(); renderAdminTable();
+});
+clearBtn.addEventListener('click', ()=>{ editor.value = ''; });
+
+changePassBtn.addEventListener('click', ()=>{
+  if(!currentUser){ alert('Login first'); return; }
+  const oldP = prompt('Enter current password:');
+  db = loadDB();
+  if(oldP !== db[currentUser].password){ alert('Incorrect password'); return; }
+  const newP = prompt('Enter new password:');
+  if(!newP){ alert('Password cannot be empty'); return; }
+  db[currentUser].password = newP; saveDB(db); alert('Password changed');
+});
+
+/* ---------- Users list (left) ---------- */
+function renderUsersList(filter=''){
+  usersWrap.innerHTML = '';
+  db = loadDB();
+  const keys = Object.keys(db).sort();
+  keys.forEach(u=>{
+    if(filter && !u.toLowerCase().includes(filter.toLowerCase())) return;
+    // compact row
+    const row = document.createElement('div'); row.className='user-row';
+    const left = document.createElement('div'); left.innerHTML = `<strong>${u}</strong><div class="small muted">${db[u].notes ? db[u].notes.slice(0,80) : '(empty)'}</div>`;
+    const actions = document.createElement('div'); actions.className='user-actions';
+    const v = document.createElement('button'); v.className='btn view'; v.textContent='View';
+    v.addEventListener('click', ()=> {
+      // view — admin opens read-only in modal (or user loads into editor if viewing self)
+      if(currentUser === 'admin0') {
+        openModal(`${u}'s Notes`, db[u].notes || '(empty)', false);
+      } else if(currentUser === u) {
+        editor.value = db[u].notes || '';
+        alert('Loaded your note into editor.');
+      } else {
+        openModal(`${u}'s Notes`, db[u].notes || '(empty)', false);
+      }
+    });
+    const c = document.createElement('button'); c.className='btn copy'; c.textContent='Copy';
+    c.addEventListener('click', ()=> {
+      navigator.clipboard.writeText(db[u].notes || '');
+      alert('Copied to clipboard');
+    });
+    const r = document.createElement('button'); r.className='btn remove'; r.textContent='Remove';
+    r.addEventListener('click', ()=> {
+      if(u === 'admin0'){ alert('Cannot remove admin'); return; }
+      confirmModal(`Delete user "${u}"? This will remove all data.`, async (ok)=>{
+        if(!ok) return;
+        db = loadDB();
+        delete db[u]; saveDB(db);
+        renderUsersList(searchUser.value.trim()); renderAdminTable();
+        alert(`User "${u}" removed`);
+      });
+    });
+    actions.appendChild(v); actions.appendChild(c); actions.appendChild(r);
+    row.appendChild(left); row.appendChild(actions);
+    usersWrap.appendChild(row);
+  });
+}
+
+/* ---------- Admin table (right) ---------- */
+function renderAdminTable(filter=''){
+  adminTbody.innerHTML = '';
+  db = loadDB();
+  const keys = Object.keys(db).sort();
+  keys.forEach(u=>{
+    if(filter && !u.toLowerCase().includes(filter.toLowerCase())) return;
+    const tr = document.createElement('tr');
+    const tdUser = document.createElement('td'); tdUser.textContent = u;
+    const tdPreview = document.createElement('td'); tdPreview.textContent = db[u].notes ? db[u].notes.slice(0,120) : '(empty)';
+    const tdActions = document.createElement('td'); tdActions.style.textAlign='right';
+    const btnView = document.createElement('button'); btnView.className='btn ghost'; btnView.textContent='View';
+    btnView.addEventListener('click', ()=> openModal(`${u}'s Notes`, db[u].notes || '(empty)', false));
+    const btnCopy = document.createElement('button'); btnCopy.className='btn copy'; btnCopy.textContent='Copy';
+    btnCopy.addEventListener('click', ()=> { navigator.clipboard.writeText(db[u].notes || ''); alert('Copied'); });
+    const btnRemove = document.createElement('button'); btnRemove.className='btn remove'; btnRemove.textContent='Remove';
+    btnRemove.addEventListener('click', ()=> {
+      if(u === 'admin0'){ alert('Cannot remove admin'); return; }
+      confirmModal(`Are you sure to delete "${u}" and all data?`, (ok)=>{
+        if(!ok) return;
+        db = loadDB(); delete db[u]; saveDB(db); renderUsersList(searchUser.value.trim()); renderAdminTable(searchUser.value.trim());
+        alert('Deleted');
+      });
+    });
+    tdActions.appendChild(btnView); tdActions.appendChild(btnCopy); tdActions.appendChild(btnRemove);
+    tr.appendChild(tdUser); tr.appendChild(tdPreview); tr.appendChild(tdActions);
+    adminTbody.appendChild(tr);
+  });
+}
+
+/* ---------- Search & refresh ---------- */
+searchUser.addEventListener('input', (e)=> {
+  const q = e.target.value.trim();
+  renderUsersList(q);
+  renderAdminTable(q);
+});
+btnRefresh.addEventListener('click', ()=> { db = loadDB(); renderUsersList(); renderAdminTable(); });
+
+/* ---------- Modal helpers ---------- */
+function openModal(title, content, showConfirm=true){
+  modalTitle.textContent = title;
+  modalBody.textContent = content;
+  modalConfirm.style.display = showConfirm ? 'inline-flex' : 'none';
+  modalBack.style.display = 'flex';
+  modalResolve = null;
+}
+function confirmModal(text, cb){
+  modalTitle.textContent = 'Confirm';
+  modalBody.textContent = text;
+  modalConfirm.style.display = 'inline-flex';
+  modalBack.style.display = 'flex';
+  modalResolve = cb;
+}
+modalCancel.addEventListener('click', ()=> { modalBack.style.display = 'none'; if(modalResolve) modalResolve(false); });
+modalConfirm.addEventListener('click', ()=> { modalBack.style.display = 'none'; if(modalResolve) modalResolve(true); });
+
+/* ---------- Init ---------- */
+(function init(){
+  db = loadDB();
+  renderUsersList();
+  renderAdminTable();
+  // quick demo: keep auth section visible
+})();
+</script>
+</body>
+</html>
